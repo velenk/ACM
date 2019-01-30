@@ -1,65 +1,78 @@
 #include <iostream>
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
+#define rep(i,s,t) for(int i = (s); i < (t); i ++)
+#define eps 1e-7
 
 using namespace std;
 
-double x01, x02, x03, x04, y01, y02, y03, y04;
-double v1, v2, v3;
+class Point{
+public:
+    double x;
+    double y;
+    Point(double xx=0, double yy=0) {x = xx, y = yy;}
+	Point(const Point& p) {x=p.x, y=p.y;} 
+    friend double Dis(const Point &a, const Point &b) {
+        return sqrt((a.x-b.x) * (a.x-b.x) + (a.y-b.y) * (a.y-b.y));
+    }
+    friend Point operator+(const Point& a, const Point& b) {
+		return Point(a.x+b.x, a.y+b.y);
+	}
+	friend Point operator-(const Point& a, const Point& b) {
+		return Point(a.x-b.x, a.y-b.y);
+	}
+	friend Point operator*(const Point& a, double t) {
+		return Point(a.x*t, a.y*t);
+	}
+};
 
-double Time(double x001, double y001, double x002, double y002) {
-    double t1 = sqrt((x001-x01)*(x001-x01) + (y001-y01)*(y001-y01)) / v1;
-    double t2 = sqrt((x001-x002)*(x001-x002) + (y001-y002)*(y001-y002)) / v3;
-    double t3 = sqrt((x002-x04)*(x002-x04) + (y002-y04)*(y002-y04)) / v2;
-    return t1 + t2 + t3;
+Point p[6];
+double v[3];
+double R0, R1;
+
+double Cal(double y) {
+    double ret = y / v[1];
+    p[5] = Point(p[3]+(p[2]-p[3])*(y/R1));
+    return ret + Dis(p[4], p[5]) / v[2];
 }
 
-double mini(double a, double b) {
-    return a<b?a:b;
+double Check(double x) {
+    double r = R1, l = 0;
+    double ret = x / v[0];
+    while (fabs(r-l) > eps) {
+        double mid1 = (r+l)/2., mid2 = (r+mid1)/2.;
+        p[4] = Point(p[0]+(p[1]-p[0])*(x/R0));
+        if (Cal(mid1) < Cal(mid2)) {
+            r = mid2;
+        } else {
+            l = mid1;
+        }
+    }
+    return ret + Cal(r);
 }
 
 int main(){
     int n0;
     cin >> n0;
     while (n0--) {
-        cin >> x01 >> y01 >> x02 >> y02 >> x03 >> y03 >> x04 >> y04;
-        cin >> v1 >> v2 >> v3;
-        double s01 = 0, s02 = 1, s03 = 0, s04 = 1;
-        double r = 1, l = 0;
-        double dx1 = x02 - x01;
-        double dy1 = y02 - y01;
-        double dx2 = x03 - x04;
-        double dy2 = y03 - y04;
-        double temp1, temp2;
-        double min0 = 1e8;
-        while (r-l>1e-9) {
-            r = (s02-s01) * 0.7 + s01;
-            l = (s02-s01) * 0.3 + s01;
-            temp1 = Time(x01+l*dx1, y01+l*dy1, x04+l*dx2, y04+l*dy2);
-            temp2 = Time(x01+r*dx1, y01+r*dy1, x04+l*dx2, y04+l*dy2);
-            if (temp1 < temp2) {
-                s02 = r;
-                min0 = mini(min0, temp1);
+        rep(i, 0, 4) {
+            cin >> p[i].x >> p[i].y;
+        }
+        rep(i, 0, 3) {
+            cin >> v[i];
+        }
+        R0 = Dis(p[1], p[0]);
+        R1 = Dis(p[3], p[2]);
+        double r = R0, l = 0;
+        while (fabs(r-l) > eps) {
+            double mid1 = (r+l)/2., mid2 = (r+mid1)/2.;
+            if (Check(mid1) < Check(mid2)) {
+                r = mid2;
             } else {
-                s01 = l;
-                min0 = mini(min0, temp2);
+                l = mid1;
             }
         }
-        r = 1, l = 0;
-        while (r-l>1e-9) {
-            r = (s04-s03) * 0.7 + s03;
-            l = (s04-s03) * 0.3 + s03;
-            temp1 = Time(x01+l*dx1, y01+l*dy1, x04+l*dx2, y04+l*dy2);
-            temp2 = Time(x01+l*dx1, y01+l*dy1, x04+r*dx2, y04+r*dy2);
-            if (temp1 < temp2) {
-                s04 = r;
-                min0 = mini(min0, temp1);
-            } else {
-                s03 = l;
-                min0 = mini(min0, temp2);
-            }
-        }
-        printf("%.6lf\n", min0);
+        printf("%.6lf\n", Check(r));
     }
     return 0;
 }
