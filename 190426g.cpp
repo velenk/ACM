@@ -1,5 +1,10 @@
 #include <iostream>
 #include <stdio.h>
+#include <string.h>
+#include <algorithm>
+#include <math.h>
+#include <iomanip>
+#define MAXN 1e5;
 
 using namespace std;
 
@@ -45,10 +50,8 @@ int main() {
                 else printf("Alice\n");
             } else if (c == 1) {
                 for (int i = 0; i < n; i++) {
-                    if (b[i] == 1 && a[i] > 1) {
-                        if (a[i] % 2 == 0) {
-                            ans ^= 1;
-                        }
+                    if (b[i] == 1) {
+                        ans ^= 1;
                     } else {
                         ans^= a[i];
                     }
